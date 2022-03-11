@@ -118,28 +118,28 @@ choice = input()
 if choice == '1':
     # Build a Sequential model
     model = Sequential()
-    # Add a Long-Short Term Memory (LSTM) layer with 64 nodes
-    model.add(LSTM(64, activation = 'relu', kernel_initializer = 'he_uniform', input_shape = (MEMORY_LENGTH, number_of_words)))
+    # Add a Long-Short Term Memory (LSTM) layer with n nodes
+    model.add(LSTM(112, activation = 'relu', kernel_initializer = 'he_uniform', input_shape = (MEMORY_LENGTH, number_of_words)))
     # Add a dense layer with softmax activation representing the output layer
     model.add(Dense(number_of_words, activation = 'softmax'))
     # Create a stochastic gradient descent optimizer
-    opt = SGD()
+    opt = SGD(learning_rate = 0.02)
     # Print the model summary
     model.summary()
     # Compile the model with the SGD optimizer, categorical crossentropy loss, and accuracy as it's metric
     model.compile(optimizer = opt, loss = 'categorical_crossentropy', metrics = ['accuracy'])
 
     # Fit the model on the data with 10% validation split, run for 15 epochs with a batch size of 32, and save its history
-    hist = model.fit(X, Y, validation_split = 0.1, epochs = 15, batch_size = 32, verbose = 1).history
+    hist = model.fit(X, Y, validation_split = 0.1, epochs = 40, batch_size = 32, verbose = 1).history
     # Save the model in an h5 file
-    model.save('model-v1.h5')
+    model.save('tuned-model.h5')
     # Save the history in a pickle file
-    pickle.dump(hist, open('history-v1.pkl', 'wb'))
+    pickle.dump(hist, open('tuned-model.pkl', 'wb'))
 
 # 2. If checking the accuracy of the current model
 elif choice == '2':
     # Load the history pickle file
-    hist = pickle.load(open("history-v1.pkl", "rb"))
+    hist = pickle.load(open("tuned-model.pkl", "rb"))
     # Plot the training and validation accuracy by epoch, and label and legend the graph
     plt.plot(hist['accuracy'])
     plt.plot(hist['val_accuracy'])
@@ -164,7 +164,7 @@ elif choice == '3':
 # 4. If predicting next word from inputs
 elif choice == '4':
     # Load the model
-    model = load_model('model-v1.h5')
+    model = load_model('tuned-model.h5')
     # This variable determines whether to continue or not
     stop = False
     # While we want to continue
