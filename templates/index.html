@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Next-Word Prediction</title>
+    </head>
+
+    <body>
+        <form action = "{{url_for('reset')}}" method = "post">
+            <button name = "reset" type = "submit">Reset</button>
+        </form>
+        <div class = "prediction">
+            <h1>Next-Word Prediction</h1>
+            <form action = "{{url_for('predict')}}" method = "post">
+                <input type = "text" name = "input" placeholder = "Enter a sentence..." required = "required"/>
+                <button type = "submit" class = "btn btn-primary btn-block btn-large">Predict</button>
+            </form>
+            <br>
+            <br>
+        </div>
+    </body>
+</html>

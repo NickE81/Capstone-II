@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Next-Word Prediction</title>
+    </head>
+
+    <body>
+        <form action = "{{url_for('reset')}}" method = "post">
+            <button name = "reset" type = "submit">Reset</button>
+        </form>
+        <div class = "prediction">
+            <h1>Next-Word Prediction</h1>
+            <br>
+            {{sentence}}
+            <form action="javascript:void(0);">
+                <input type = "button" value = "{{word1}}"></button>
+                <input type = "button" value = "{{word2}}"></button>
+                <input type = "button" value = "{{word3}}"></button>
+                <input type = "text" name = "other" placeholder = "Other"/>
+                <button type = "submit" class = "btn btn-primary btn-block btn-large">Enter</button>
+            </form>
+            {{selected}}
+            <br>
+            <br>
+        </div>
+    </body>
+</html>

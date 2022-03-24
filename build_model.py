@@ -177,7 +177,7 @@ elif choice == '4':
         # Predict the next word using the predict function on our model
         preds = model.predict(x, verbose = 0)
         # Get the indices of the top n most likely next words
-        top = top_n(preds, 5)
+        top = top_n(preds, 3)
         # Get the suggested words based on the indices
         suggs = get_words(top)
         # Print the user's input
