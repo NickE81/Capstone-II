@@ -10,11 +10,13 @@ app = Flask(__name__)
 def text_prep(text):
     # Split the input text into a list of words in the sentence
     text = text.lower().split()
-    # Take the last (at most) 5 words for prediction, because the model can not handle more than 5 words
+    # Take the last (at most) 5 words for prediction, because the model can
+    # not handle more than 5 words
     pred_text = text[-5:]
     # Create a list for the input in a form usable by the model
     x = np.zeros((1, MEMORY_LENGTH, number_of_words))
-    # Populate the input array, where 1 in (i, j) represents the ith word being the jth word in the unique word index
+    # Populate the input array, where 1 in (i, j) represents the ith word
+    # being the jth word in the unique word index
     for t, word in enumerate(pred_text):
         x[0, t, unique_word_index[word]] = 1
     # Return the input
@@ -32,7 +34,8 @@ def top_n(preds, n):
     preds = preds_exp / np.sum(preds_exp)
     # Find the indices of the top n most likely words
     preds = (-preds).argsort()[0, 1:n+1]
-    # Return the list of the indices of the top n most likely words in descending order
+    # Return the list of the indices of the top n most likely words in
+    # descending order
     return preds
 
 def get_words(top):
@@ -44,7 +47,8 @@ def get_words(top):
         for word, idx in unique_word_index.items():
             # If the unique word index matches the top words index
             if idx == i:
-                # We have found the word we are looking for, add it to the suggestions list
+                # We have found the word we are looking for, add it to the
+                # suggestions list
                 suggs.append(word)
     # Return the suggestions list
     return suggs
@@ -88,19 +92,29 @@ def predict():
     top = top_n(preds, 3)
     # Get the suggested words based on the indices
     suggs = get_words(top)
-    return render_template('prediction.html', sentence = sentence, word1 = suggs[0], word2 = suggs[1], word3 = suggs[2])
+    return render_template('prediction.html', sentence = sentence,
+                           word1 = suggs[0], word2 = suggs[1],
+                           word3 = suggs[2])
 
 @app.route('/selection', methods = ['POST'])
 def selection():
-    global sentence, selected
+    global sentence, selected, suggs
     if request.form['other'] == "":
         selected = request.form['submit_button']
-        return render_template('selected.html', sentence = sentence, word1 = suggs[0], word2 = suggs[1], word3 = suggs[2],
-                            selected = "The final sentence is: " + sentence + " " + selected)
     else:
         selected = request.form['other']
-        return render_template('selected.html', sentence = sentence, word1 = suggs[0], word2 = suggs[1], word3 = suggs[2],
-                            selected = "The final sentence is: " + sentence + " " + selected)
+    sentence = sentence + " " + selected
+    # Prepare the input for prediction
+    x = text_prep(sentence)
+    # Predict the next word using the predict function on our model
+    preds = model.predict(x, verbose = 0)
+    # Get the indices of the top n most likely next words
+    top = top_n(preds, 3)
+    # Get the suggested words based on the indices
+    suggs = get_words(top)
+    return render_template('prediction.html', sentence = sentence,
+                           word1 = suggs[0], word2 = suggs[1],
+                           word3 = suggs[2])
 
 @app.route('/reset', methods = ["POST"])
 def reset():

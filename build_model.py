@@ -119,18 +119,24 @@ if choice == '1':
     # Build a Sequential model
     model = Sequential()
     # Add a Long-Short Term Memory (LSTM) layer with n nodes
-    model.add(LSTM(112, activation = 'relu', kernel_initializer = 'he_uniform', input_shape = (MEMORY_LENGTH, number_of_words)))
+    model.add(LSTM(112, activation = 'relu',
+              kernel_initializer = 'he_uniform', input_shape =
+              (MEMORY_LENGTH, number_of_words)))
     # Add a dense layer with softmax activation representing the output layer
     model.add(Dense(number_of_words, activation = 'softmax'))
     # Create a stochastic gradient descent optimizer
     opt = SGD(learning_rate = 0.02)
     # Print the model summary
     model.summary()
-    # Compile the model with the SGD optimizer, categorical crossentropy loss, and accuracy as it's metric
-    model.compile(optimizer = opt, loss = 'categorical_crossentropy', metrics = ['accuracy'])
+    # Compile the model with the SGD optimizer, categorical crossentropy loss,
+    # and accuracy as it's metric
+    model.compile(optimizer = opt, loss = 'categorical_crossentropy',
+                  metrics = ['accuracy'])
 
-    # Fit the model on the data with 10% validation split, run for 15 epochs with a batch size of 32, and save its history
-    hist = model.fit(X, Y, validation_split = 0.1, epochs = 40, batch_size = 32, verbose = 1).history
+    # Fit the model on the data with 10% validation split, run for 15 epochs
+    # with a batch size of 32, and save its history
+    hist = model.fit(X, Y, validation_split = 0.1, epochs = 40,
+                     batch_size = 32, verbose = 1).history
     # Save the model in an h5 file
     model.save('tuned-model.h5')
     # Save the history in a pickle file
@@ -140,7 +146,8 @@ if choice == '1':
 elif choice == '2':
     # Load the history pickle file
     hist = pickle.load(open("tuned-model.pkl", "rb"))
-    # Plot the training and validation accuracy by epoch, and label and legend the graph
+    # Plot the training and validation accuracy by epoch,
+    # and label and legend the graph
     plt.plot(hist['accuracy'])
     plt.plot(hist['val_accuracy'])
     plt.title('Accuracy of next word prediction model')
@@ -152,7 +159,9 @@ elif choice == '2':
 # 3. If building a model using keras_tuner to find optimal parameters
 elif choice == '3':
     # Build the tuner that will look for the best model
-    tuner = RandomSearch(build_model, objective = 'val_accuracy', max_trials = 5, directory = 'next_word_output', project_name = 'next_word_prediction')
+    tuner = RandomSearch(build_model, objective = 'val_accuracy',
+                         max_trials = 5, directory = 'next_word_output',
+                         project_name = 'next_word_prediction')
     # Perform search for the best model
     tuner.search(X, Y, validation_split = 0.1, epochs = 40, batch_size = 32)
     # Retrieve the best trained model
