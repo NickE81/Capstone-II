@@ -9,11 +9,11 @@
     <body>
         <div class = "reset-user">
             <form action = "{{url_for('reset')}}" method = "post">
-                <button name = "reset" type = "submit">Reset</button>
+                <button name = "reset" class = "btn" type = "submit">Reset</button>
             </form>
             <form action = "{{url_for('change_user')}}" method = "post">
                 User: {{user}} <input type = "text" name = "new_user" placeholder = "Enter new user..." required = "required">
-                <button type = "submit" class = "btn btn-primary btn-block btn-large">Change</button>
+                <button type = "submit" class = "btn">Change</button>
             </form>
         </div>
         <div class = "prediction">
@@ -21,14 +21,20 @@
             <br>
             {{sentence}}
             <form action = "{{url_for('selection')}}" method = "post">
-                <input type = "submit" name = "choice" value = "{{word1}}"></button>
-                <input type = "submit" name = "choice" value = "{{word2}}"></button>
-                <input type = "submit" name = "choice" value = "{{word3}}"></button>
-                <input type = "text" name = "other" placeholder = "Other" required = "required"/>
-                <button type = "submit" class = "btn btn-primary btn-block btn-large">Enter</button>
+                <input type = "submit" class = "btn" name = "choice1" value = "{{word1}}"> - {{score1}}%</button>
+                <input type = "submit" class = "btn" name = "choice2" value = "{{word2}}"> - {{score2}}%</button>
+                <input type = "submit" class = "btn" name = "choice3" value = "{{word3}}"> - {{score3}}%</button>
+                <input type = "text" name = "other" placeholder = "Other"/>
+                <button type = "submit" class = "btn">Enter</button>
             </form>
             <br>
             <br>
+        </div>
+        <div class = "history">
+            <h2>Your History:</h2>
+            {%for table in records%}
+                {{table|safe}}
+            {%endfor%}
         </div>
     </body>
 </html>

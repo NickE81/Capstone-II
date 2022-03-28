@@ -7,6 +7,18 @@ from flask import Flask, request, jsonify, render_template
 
 app = Flask(__name__)
 
+# Function performing the whole word prediction process
+def make_predictions(sentence):
+    # Prepare the input for prediction
+    x = text_prep(sentence)
+    # Predict the next word using the predict function on our model
+    preds = model.predict(x, verbose = 0)
+    # Get the indices of the top n most likely next words
+    top, scores = top_n(preds, 3)
+    # Get the suggested words based on the indices
+    suggs = get_words(top)
+    return suggs, scores
+
 # Preparing input text for next word prediction
 def text_prep(text):
     # Split the input text into a list of words in the sentence
@@ -34,10 +46,12 @@ def top_n(preds, n):
     # Find the percentage for each words
     preds = preds_exp / np.sum(preds_exp)
     # Find the indices of the top n most likely words
-    preds = (-preds).argsort()[0, 1:n+1]
+    words = (-preds).argsort()[0, 1:n+1]
+    scores = -100 * np.sort(-preds)[0, 1:n+1]
+    scores = [round(num, 2) for num in scores]
     # Return the list of the indices of the top n most likely words in
     # descending order
-    return preds
+    return words, scores
 
 def get_words(top):
     # Create a list for the suggested words
@@ -75,66 +89,78 @@ MEMORY_LENGTH = 5
 
 @app.route('/')
 def home():
-    global sentence, suggs, selected, user
+    global sentence, suggs, selected, user, table, records
     sentence = ""
     suggs = []
     selected = ""
     user = "Guest"
-    return render_template('index.html', user = user)
+    table = pd.read_csv("records.csv")
+    records = table[table.Name == user]
+    records = [records.to_html(index = False)]
+    return render_template('index.html', user = user, records = records)
 
 @app.route('/predict', methods = ['POST'])
 def predict():
-    global sentence, suggs
+    global sentence, suggs, records
     sentence = [x for x in request.form.values()][0]
-    # Prepare the input for prediction
-    x = text_prep(sentence)
-    # Predict the next word using the predict function on our model
-    preds = model.predict(x, verbose = 0)
-    # Get the indices of the top n most likely next words
-    top = top_n(preds, 3)
-    # Get the suggested words based on the indices
-    suggs = get_words(top)
+    suggs, scores = make_predictions(sentence)
+    records = table[table.Name == user]
+    records = [records.to_html(index = False)]
     return render_template('prediction.html', sentence = sentence,
                            word1 = suggs[0], word2 = suggs[1],
-                           word3 = suggs[2], user = user)
+                           word3 = suggs[2], score1 = scores[0], 
+                           score2 = scores[1], score3 = scores[2],
+                           user = user, records = records)
 
 @app.route('/selection', methods = ['POST'])
 def selection():
-    global sentence, selected, suggs
-    if request.form['other'] == "":
-        selected = request.form['choice']
+    global sentence, selected, suggs, records, table
+    if request.form.get('choice1'):
+        selected = request.form['choice1']
+        option = "1"
+    elif request.form.get('choice2'):
+        selected = request.form['choice2']
+        option = "2"
+    elif request.form.get('choice3'):
+        selected = request.form['choice3']
+        option = "3"
     else:
         selected = request.form['other']
+        option = "Other"
+    table = table.append({'Name': user, 'Sentence': sentence, 'Word': selected,
+                  'Position': option}, ignore_index = True)
+    table.to_csv('records.csv', index = False)
     sentence = sentence + " " + selected
-    # Prepare the input for prediction
-    x = text_prep(sentence)
-    # Predict the next word using the predict function on our model
-    preds = model.predict(x, verbose = 0)
-    # Get the indices of the top n most likely next words
-    top = top_n(preds, 3)
-    # Get the suggested words based on the indices
-    suggs = get_words(top)
+    suggs, scores = make_predictions(sentence)
+    records = table[table.Name == user]
+    records = [records.to_html(index = False)]
     return render_template('prediction.html', sentence = sentence,
                            word1 = suggs[0], word2 = suggs[1],
-                           word3 = suggs[2], user = user)
+                           word3 = suggs[2], score1 = scores[0], 
+                           score2 = scores[1], score3 = scores[2],
+                           user = user, records = records)
 
 @app.route('/change_user', methods = ["POST"])
 def change_user():
-    global sentence, suggs, selected, user
+    global sentence, suggs, selected, user, records
     sentence = ""
     suggs = []
     selected = ""
     user = request.form['new_user']
-    return render_template('index.html', user = user)
+    records = table[table.Name == user]
+    records = [records.to_html(index = False)]
+    return render_template('index.html', user = user, records = records)
                            
 
 @app.route('/reset', methods = ["POST"])
 def reset():
-    global sentence, suggs, selected
+    global sentence, suggs, selected, records
     sentence = ""
     suggs = []
     selected = ""
-    return render_template('index.html', user = user)
+    records = table[table.Name == user]
+    records = [records.to_html(index = False)]
+    return render_template('index.html', user = user, records = records)
 
 
 if __name__ == '__main__':
