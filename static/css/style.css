@@ -1,0 +1,17 @@
+h1 {
+    color: blue;
+}
+
+
+.reset-user {
+    display: flex;
+    justify-content: space-between;
+}
+
+.prediction {
+    text-align: center;
+}
+
+button[name = 'reset'] {
+    color: red
+}

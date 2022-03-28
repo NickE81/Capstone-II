@@ -1,13 +1,21 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <meta charset="UTF-8">
         <title>Next-Word Prediction</title>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}"/>
     </head>
 
     <body>
-        <form action = "{{url_for('reset')}}" method = "post">
-            <button name = "reset" type = "submit">Reset</button>
-        </form>
+        <div class = "reset-user">
+            <form action = "{{url_for('reset')}}" method = "post">
+                <button name = "reset" type = "submit">Reset</button>
+            </form>
+            <form name = "new-name" action = "{{url_for('change_user')}}" method = "post">
+                User: {{user}} <input type = "text" name = "new_user" placeholder = "Enter new user..." required = "required">
+                <button type = "submit" class = "btn btn-primary btn-block btn-large">Change</button>
+            </form>
+        </div>
         <div class = "prediction">
             <h1>Next-Word Prediction</h1>
             <form action = "{{url_for('predict')}}" method = "post">

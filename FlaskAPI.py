@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import numpy as np
 from keras.models import load_model
 import pandas as pd
@@ -74,11 +75,12 @@ MEMORY_LENGTH = 5
 
 @app.route('/')
 def home():
-    global sentence, suggs, selected
+    global sentence, suggs, selected, user
     sentence = ""
     suggs = []
     selected = ""
-    return render_template('index.html')
+    user = "Guest"
+    return render_template('index.html', user = user)
 
 @app.route('/predict', methods = ['POST'])
 def predict():
@@ -94,13 +96,13 @@ def predict():
     suggs = get_words(top)
     return render_template('prediction.html', sentence = sentence,
                            word1 = suggs[0], word2 = suggs[1],
-                           word3 = suggs[2])
+                           word3 = suggs[2], user = user)
 
 @app.route('/selection', methods = ['POST'])
 def selection():
     global sentence, selected, suggs
     if request.form['other'] == "":
-        selected = request.form['submit_button']
+        selected = request.form['choice']
     else:
         selected = request.form['other']
     sentence = sentence + " " + selected
@@ -114,11 +116,25 @@ def selection():
     suggs = get_words(top)
     return render_template('prediction.html', sentence = sentence,
                            word1 = suggs[0], word2 = suggs[1],
-                           word3 = suggs[2])
+                           word3 = suggs[2], user = user)
+
+@app.route('/change_user', methods = ["POST"])
+def change_user():
+    global sentence, suggs, selected, user
+    sentence = ""
+    suggs = []
+    selected = ""
+    user = request.form['new_user']
+    return render_template('index.html', user = user)
+                           
 
 @app.route('/reset', methods = ["POST"])
 def reset():
-    return render_template('index.html')
+    global sentence, suggs, selected
+    sentence = ""
+    suggs = []
+    selected = ""
+    return render_template('index.html', user = user)
 
 
 if __name__ == '__main__':

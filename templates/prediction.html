@@ -2,21 +2,29 @@
 <html>
     <head>
         <title>Next-Word Prediction</title>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
     </head>
 
     <body>
-        <form action = "{{url_for('reset')}}" method = "post">
-            <button name = "reset" type = "submit">Reset</button>
-        </form>
+        <div class = "reset-user">
+            <form action = "{{url_for('reset')}}" method = "post">
+                <button name = "reset" type = "submit">Reset</button>
+            </form>
+            <form action = "{{url_for('change_user')}}" method = "post">
+                User: {{user}} <input type = "text" name = "new_user" placeholder = "Enter new user..." required = "required">
+                <button type = "submit" class = "btn btn-primary btn-block btn-large">Change</button>
+            </form>
+        </div>
         <div class = "prediction">
             <h1>Next-Word Prediction</h1>
             <br>
             {{sentence}}
             <form action = "{{url_for('selection')}}" method = "post">
-                <input type = "submit" name = "submit_button" value = "{{word1}}"></button>
-                <input type = "submit" name = "submit_button" value = "{{word2}}"></button>
-                <input type = "submit" name = "submit_button" value = "{{word3}}"></button>
-                <input type = "text" name = "other" placeholder = "Other"/>
+                <input type = "submit" name = "choice" value = "{{word1}}"></button>
+                <input type = "submit" name = "choice" value = "{{word2}}"></button>
+                <input type = "submit" name = "choice" value = "{{word3}}"></button>
+                <input type = "text" name = "other" placeholder = "Other" required = "required"/>
                 <button type = "submit" class = "btn btn-primary btn-block btn-large">Enter</button>
             </form>
             <br>
