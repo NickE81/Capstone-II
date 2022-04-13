@@ -10,22 +10,35 @@ app = Flask(__name__)
 # Function performing the whole word prediction process
 def make_predictions(sentence):
     # Prepare the input for prediction
-    x = text_prep(sentence)
+    x, MEMORY_LENGTH = text_prep(sentence)
+    if MEMORY_LENGTH == 1:
+        model = model1
+    elif MEMORY_LENGTH == 3:
+        model = model3
+    else:
+        model = model5
     # Predict the next word using the predict function on our model
     preds = model.predict(x, verbose = 0)
     # Get the indices of the top n most likely next words
-    top, scores = top_n(preds, 3)
+    top = top_n(preds, 3)
     # Get the suggested words based on the indices
     suggs = get_words(top)
-    return suggs, scores
+    return suggs
 
 # Preparing input text for next word prediction
 def text_prep(text):
     # Split the input text into a list of words in the sentence
     text = text.lower().split()
-    # Take the last (at most) 5 words for prediction, because the model can
-    # not handle more than 5 words
-    pred_text = text[-5:]
+    # Depending on how long the input is, take the number of final words
+    # corresponding to the model to use (1 word, 3 words or 5 words)
+    if len(text) in [1, 2]:
+        pred_text = text[-1]
+    elif len(text) in [3, 4]:
+        pred_text = text[-3:]
+    else:
+        pred_text = text[-5:]
+    MEMORY_LENGTH = len(pred_text)
+
     # Create a list for the input in a form usable by the model
     x = np.zeros((1, MEMORY_LENGTH, number_of_words))
     # Populate the input array, where 1 in (i, j) represents the ith word
@@ -33,7 +46,7 @@ def text_prep(text):
     for t, word in enumerate(pred_text):
         x[0, t, unique_word_index[word]] = 1
     # Return the input
-    return x
+    return x, MEMORY_LENGTH
 
 # Get the indices of the top n most likely next words
 def top_n(preds, n):
@@ -47,11 +60,9 @@ def top_n(preds, n):
     preds = preds_exp / np.sum(preds_exp)
     # Find the indices of the top n most likely words
     words = (-preds).argsort()[0, 1:n+1]
-    scores = -100 * np.sort(-preds)[0, 1:n+1]
-    scores = [round(num, 2) for num in scores]
     # Return the list of the indices of the top n most likely words in
     # descending order
-    return words, scores
+    return words
 
 def get_words(top):
     # Create a list for the suggested words
@@ -68,7 +79,9 @@ def get_words(top):
     # Return the suggestions list
     return suggs
 
-model = load_model('tuned-model.h5')
+model5 = load_model('5w-model.h5')
+model3 = load_model('3w-model.h5')
+model1 = load_model('1w-model.h5')
 
 # Get data
 file = 'data.txt'
@@ -83,9 +96,6 @@ unique_words = np.unique(words)
 unique_word_index = dict((word, i) for i, word in enumerate(unique_words))
 # Note: # of words is 4289
 number_of_words = len(unique_words)
-
-# Want the model to predict the next word based on 5 previous words
-MEMORY_LENGTH = 5
 
 @app.route('/')
 def home():
@@ -103,14 +113,12 @@ def home():
 def predict():
     global sentence, suggs, records
     sentence = [x for x in request.form.values()][0]
-    suggs, scores = make_predictions(sentence)
+    suggs = make_predictions(sentence)
     records = table[table.Name == user]
     records = [records.to_html(index = False)]
     return render_template('prediction.html', sentence = sentence,
                            word1 = suggs[0], word2 = suggs[1],
-                           word3 = suggs[2], score1 = scores[0], 
-                           score2 = scores[1], score3 = scores[2],
-                           user = user, records = records)
+                           word3 = suggs[2], user = user, records = records)
 
 @app.route('/selection', methods = ['POST'])
 def selection():
@@ -131,14 +139,13 @@ def selection():
                   'Position': option}, ignore_index = True)
     table.to_csv('records.csv', index = False)
     sentence = sentence + " " + selected
-    suggs, scores = make_predictions(sentence)
+    suggs = make_predictions(sentence)
     records = table[table.Name == user]
     records = [records.to_html(index = False)]
     return render_template('prediction.html', sentence = sentence,
                            word1 = suggs[0], word2 = suggs[1],
-                           word3 = suggs[2], score1 = scores[0], 
-                           score2 = scores[1], score3 = scores[2],
-                           user = user, records = records)
+                           word3 = suggs[2], user = user, records = records)
+
 
 @app.route('/change_user', methods = ["POST"])
 def change_user():

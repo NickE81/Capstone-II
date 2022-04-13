@@ -84,8 +84,8 @@ unique_word_index = dict((word, i) for i, word in enumerate(unique_words))
 # Note: # of words is 4289
 number_of_words = len(unique_words)
 
-# Want the model to predict the next word based on 5 previous words
-MEMORY_LENGTH = 5
+# Want the model to predict the next word based on 3 previous words
+MEMORY_LENGTH = 1
 # Create lists to store sets of previous words, and their corresponding next word
 prev_words = []
 next_words = []
@@ -119,7 +119,7 @@ if choice == '1':
     # Build a Sequential model
     model = Sequential()
     # Add a Long-Short Term Memory (LSTM) layer with n nodes
-    model.add(LSTM(112, activation = 'relu',
+    model.add(LSTM(4, activation = 'relu',
               kernel_initializer = 'he_uniform', input_shape =
               (MEMORY_LENGTH, number_of_words)))
     # Add a dense layer with softmax activation representing the output layer
@@ -133,14 +133,22 @@ if choice == '1':
     model.compile(optimizer = opt, loss = 'categorical_crossentropy',
                   metrics = ['accuracy'])
 
-    # Fit the model on the data with 10% validation split, run for 15 epochs
+    # Fit the model on the data with 10% validation split, run for 60 epochs
     # with a batch size of 32, and save its history
-    hist = model.fit(X, Y, validation_split = 0.1, epochs = 40,
+    hist = model.fit(X, Y, validation_split = 0.1, epochs = 60,
                      batch_size = 32, verbose = 1).history
     # Save the model in an h5 file
-    model.save('tuned-model.h5')
-    # Save the history in a pickle file
-    pickle.dump(hist, open('tuned-model.pkl', 'wb'))
+    model.save('1w-model.h5')
+    # Plot the training and validation accuracy by epoch,
+    # and label and legend the graph
+    plt.plot(hist['accuracy'])
+    plt.plot(hist['val_accuracy'])
+    plt.title('Accuracy of next word prediction model')
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.legend(['train', 'test'])
+    plt.savefig('Extras/1w-graph.jpg')
+
 
 # 2. If checking the accuracy of the current model
 elif choice == '2':
