@@ -40,7 +40,7 @@ def text_prep(text):
     MEMORY_LENGTH = len(pred_text)
 
     # Create a list for the input in a form usable by the model
-    x = np.zeros((1, MEMORY_LENGTH, number_of_words))
+    x = np.zeros((1, MEMORY_LENGTH, 4289))
     # Populate the input array, where 1 in (i, j) represents the ith word
     # being the jth word in the unique word index
     for t, word in enumerate(pred_text):
